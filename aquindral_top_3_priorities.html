@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aquindral's Top 3 Priorities</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #195b71 0%, #144a5a 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        
+        .header h2 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+        
+        .instruction-box {
+            background: #e8f4f8;
+            border-left: 4px solid #195b71;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 5px;
+        }
+        
+        .instruction-box strong {
+            color: #195b71;
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+        
+        .counter {
+            background: white;
+            border: 3px solid #195b71;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 25px;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #195b71;
+        }
+        
+        .counter-number {
+            font-size: 2em;
+            color: #195b71;
+            margin: 0 8px;
+        }
+        
+        .counter.complete {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+        
+        .counter.complete .counter-number {
+            color: #28a745;
+        }
+        
+        .priorities-list {
+            margin-bottom: 30px;
+        }
+        
+        .priority-item {
+            display: flex;
+            align-items: center;
+            padding: 18px;
+            margin-bottom: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+            position: relative;
+        }
+        
+        .priority-item:hover:not(.disabled) {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .priority-item.selected {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border-color: #28a745;
+        }
+        
+        .priority-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .priority-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid #195b71;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #195b71;
+            margin-right: 15px;
+            flex-shrink: 0;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+        }
+        
+        .priority-item.selected .priority-number {
+            background: #28a745;
+            border-color: #28a745;
+            color: white;
+        }
+        
+        .priority-text {
+            flex: 1;
+            font-size: 1em;
+            color: #333;
+        }
+        
+        .priority-item.selected .priority-text {
+            font-weight: bold;
+            color: #155724;
+        }
+        
+        .checkmark {
+            font-size: 1.5em;
+            color: #28a745;
+            margin-left: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .priority-item.selected .checkmark {
+            opacity: 1;
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, #195b71 0%, #144a5a 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            display: none;
+        }
+        
+        .submit-btn.show {
+            display: block;
+        }
+        
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+        
+        .submit-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .action-plan {
+            display: none;
+            margin-top: 30px;
+            animation: slideIn 0.5s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .action-plan.show {
+            display: block;
+        }
+        
+        .action-plan-header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px 8px 0 0;
+            text-align: center;
+        }
+        
+        .action-plan-header h3 {
+            font-size: 1.5em;
+            margin-bottom: 8px;
+        }
+        
+        .action-plan-content {
+            background: #f8f9fa;
+            border: 3px solid #28a745;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            padding: 25px;
+        }
+        
+        .selected-priorities {
+            margin-bottom: 25px;
+        }
+        
+        .selected-priorities h4 {
+            color: #195b71;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .selected-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .selected-list li {
+            padding: 12px;
+            margin-bottom: 10px;
+            background: white;
+            border-left: 4px solid #28a745;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .selected-list li::before {
+            content: "✓";
+            color: #28a745;
+            font-weight: bold;
+            font-size: 1.3em;
+            margin-right: 12px;
+        }
+        
+        .next-steps {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .next-steps h4 {
+            color: #195b71;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .step-item {
+            padding: 15px;
+            margin-bottom: 12px;
+            background: #e8f4f8;
+            border-left: 4px solid #195b71;
+            border-radius: 5px;
+        }
+        
+        .step-number {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            background: #195b71;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 28px;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 0.9em;
+        }
+        
+        .step-title {
+            font-weight: bold;
+            color: #195b71;
+            margin-bottom: 5px;
+        }
+        
+        .step-description {
+            color: #555;
+            font-size: 0.95em;
+            line-height: 1.5;
+            margin-left: 38px;
+        }
+        
+        .reset-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1em;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .reset-btn:hover {
+            background: #5a6268;
+        }
+        
+        .timeline-note {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            color: #856404;
+        }
+        
+        .timeline-note strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.05em;
+        }
+        
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            .header h2 {
+                font-size: 1.5em;
+            }
+            
+            .priority-item {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>🎯 Aquindral's Top 3 Priorities</h2>
+            <p>Select the three most important actions to implement first</p>
+        </div>
+        
+        <div class="instruction-box">
+            <strong>Instructions:</strong>
+            Click to select up to 3 priorities that will have the greatest impact on achieving Gold Standard compliance. After selecting 3 items, your choices will lock and you'll receive a personalized action plan.
+        </div>
+        
+        <div class="counter" id="counter">
+            Selected: <span class="counter-number" id="counterNumber">0</span> / 3
+        </div>
+        
+        <div class="priorities-list" id="prioritiesList">
+            <div class="priority-item" data-priority="annual-schedule">
+                <div class="priority-number"></div>
+                <div class="priority-text">Change from 18-month to annual campaign schedule</div>
+                <span class="checkmark">✓</span>
+            </div>
+            
+            <div class="priority-item" data-priority="jmp-implementation">
+                <div class="priority-number"></div>
+                <div class="priority-text">Learn about and implement content into our campaigns based on WHO/UNICEF JMP service level targets and Core Questions</div>
+                <span class="checkmark">✓</span>
+            </div>
+            
+            <div class="priority-item" data-priority="improvement-process">
+                <div class="priority-number"></div>
+                <div class="priority-text">Develop systematic year-on-year improvement process</div>
+                <span class="checkmark">✓</span>
+            </div>
+            
+            <div class="priority-item" data-priority="reporting-templates">
+                <div class="priority-number"></div>
+                <div class="priority-text">Create detailed annual hygiene campaign plans and reporting templates</div>
+                <span class="checkmark">✓</span>
+            </div>
+            
+            <div class="priority-item" data-priority="expand-reach">
+                <div class="priority-number"></div>
+                <div class="priority-text">Expand household reach from 70% to 80%</div>
+                <span class="checkmark">✓</span>
+            </div>
+            
+            <div class="priority-item" data-priority="disease-prevention">
+                <div class="priority-number"></div>
+                <div class="priority-text">Add disease prevention behaviors to curriculum</div>
+                <span class="checkmark">✓</span>
+            </div>
+        </div>
+        
+        <button class="submit-btn" id="submitBtn">Generate My Action Plan</button>
+        
+        <div class="action-plan" id="actionPlan">
+            <div class="action-plan-header">
+                <h3>📋 Your Personalized Action Plan</h3>
+                <p>Based on your selected priorities</p>
+            </div>
+            <div class="action-plan-content">
+                <div class="selected-priorities">
+                    <h4>Your Top 3 Priorities:</h4>
+                    <ul class="selected-list" id="selectedList"></ul>
+                </div>
+                
+                <div class="next-steps">
+                    <h4>Recommended Implementation Steps:</h4>
+                    <div id="stepsContainer"></div>
+                </div>
+                
+                <div class="timeline-note">
+                    <strong>⏱️ Timeline Recommendation:</strong>
+                    <span id="timelineText"></span>
+                </div>
+                
+                <button class="reset-btn" onclick="resetSelection()">Start Over</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let selectedPriorities = [];
+        const maxSelections = 3;
+        
+        const priorityItems = document.querySelectorAll('.priority-item');
+        const counter = document.getElementById('counter');
+        const counterNumber = document.getElementById('counterNumber');
+        const submitBtn = document.getElementById('submitBtn');
+        const actionPlan = document.getElementById('actionPlan');
+        
+        const priorityData = {
+            'annual-schedule': {
+                title: 'Change from 18-month to annual campaign schedule',
+                steps: [
+                    {
+                        title: 'Calculate incremental costs',
+                        description: 'Identify additional transportation, staff time, and materials needed for more frequent visits.'
+                    },
+                    {
+                        title: 'Adjust annual budget',
+                        description: 'Allocate funds for increased campaign frequency before next fiscal year.'
+                    },
+                    {
+                        title: 'Create annual campaign calendar',
+                        description: 'Schedule campaigns at consistent intervals (e.g., same month each year) for predictability.'
+                    }
+                ],
+                timeline: 'Implement starting next campaign cycle (3-6 months)'
+            },
+            'jmp-implementation': {
+                title: 'Learn about and implement WHO/UNICEF JMP service level targets and Core Questions',
+                steps: [
+                    {
+                        title: 'Staff training on JMP methodology',
+                        description: 'Conduct internal workshop using WHO/UNICEF JMP resources to understand service ladders and core questions.'
+                    },
+                    {
+                        title: 'Design JMP-aligned campaigns',
+                        description: 'Develop campaign content that addresses specific service level improvements (basic to safely managed).'
+                    },
+                    {
+                        title: 'Pilot JMP survey tools',
+                        description: 'Test JMP Core Questions in one community before full rollout to refine data collection process.'
+                    }
+                ],
+                timeline: 'Complete training within 2 months, pilot within 4 months'
+            },
+            'improvement-process': {
+                title: 'Develop systematic year-on-year improvement process',
+                steps: [
+                    {
+                        title: 'Establish review meetings',
+                        description: 'Schedule quarterly campaign review sessions to analyze what worked and what needs adjustment.'
+                    },
+                    {
+                        title: 'Create improvement tracking system',
+                        description: 'Use simple spreadsheet or database to track campaign effectiveness trends year-over-year.'
+                    },
+                    {
+                        title: 'Document lessons learned',
+                        description: 'Maintain a lessons learned log that informs next year\'s campaign design and material updates.'
+                    }
+                ],
+                timeline: 'Establish process within 1 month, iterate annually'
+            },
+            'reporting-templates': {
+                title: 'Create detailed annual hygiene campaign plans and reporting templates',
+                steps: [
+                    {
+                        title: 'Develop campaign planning template',
+                        description: 'Create standardized template covering: assessment, messages, methods, reach targets, and timeline.'
+                    },
+                    {
+                        title: 'Build annual reporting template',
+                        description: 'Design template that captures: activities, JMP results, lessons learned, improvements, and additional observations.'
+                    },
+                    {
+                        title: 'Establish documentation workflow',
+                        description: 'Define who documents what, when, and where data is stored for easy annual report compilation.'
+                    }
+                ],
+                timeline: 'Complete templates within 1 month, use for next campaign'
+            },
+            'expand-reach': {
+                title: 'Expand household reach from 70% to 80%',
+                steps: [
+                    {
+                        title: 'Identify unreached households',
+                        description: 'Map current coverage and understand barriers preventing access to remaining 30% of households.'
+                    },
+                    {
+                        title: 'Adjust outreach strategy',
+                        description: 'Develop targeted approaches for hard-to-reach households (remote locations, specific demographics).'
+                    },
+                    {
+                        title: 'Allocate additional resources',
+                        description: 'Budget for extra staff time, transportation, or community mobilizers to achieve 80% coverage.'
+                    }
+                ],
+                timeline: 'Increase reach incrementally over 2-3 campaign cycles'
+            },
+            'disease-prevention': {
+                title: 'Add disease prevention behaviors to curriculum',
+                steps: [
+                    {
+                        title: 'Research community disease patterns',
+                        description: 'Identify priority diseases (diarrhea, typhoid, cholera) affecting target communities through local health data.'
+                    },
+                    {
+                        title: 'Develop prevention messaging',
+                        description: 'Create simple, actionable messages linking hygiene behaviors to disease prevention using local examples.'
+                    },
+                    {
+                        title: 'Pilot expanded curriculum',
+                        description: 'Test disease prevention content in one community, gather feedback, refine before full implementation.'
+                    }
+                ],
+                timeline: 'Develop content in 2 months, pilot in 3-4 months'
+            }
+        };
+        
+        priorityItems.forEach(item => {
+            item.addEventListener('click', function() {
+                if (this.classList.contains('disabled')) return;
+                
+                const priorityKey = this.getAttribute('data-priority');
+                
+                if (this.classList.contains('selected')) {
+                    // Deselect
+                    this.classList.remove('selected');
+                    const index = selectedPriorities.indexOf(priorityKey);
+                    if (index > -1) {
+                        selectedPriorities.splice(index, 1);
+                    }
+                    this.querySelector('.priority-number').textContent = '';
+                    
+                    // Re-enable all items
+                    priorityItems.forEach(otherItem => {
+                        otherItem.classList.remove('disabled');
+                    });
+                } else {
+                    // Select
+                    if (selectedPriorities.length < maxSelections) {
+                        this.classList.add('selected');
+                        selectedPriorities.push(priorityKey);
+                        this.querySelector('.priority-number').textContent = selectedPriorities.length;
+                        
+                        // Check if we've reached max
+                        if (selectedPriorities.length === maxSelections) {
+                            // Disable unselected items
+                            priorityItems.forEach(otherItem => {
+                                if (!otherItem.classList.contains('selected')) {
+                                    otherItem.classList.add('disabled');
+                                }
+                            });
+                            counter.classList.add('complete');
+                            submitBtn.classList.add('show');
+                        }
+                    }
+                }
+                
+                // Update counter
+                counterNumber.textContent = selectedPriorities.length;
+                
+                if (selectedPriorities.length < maxSelections) {
+                    counter.classList.remove('complete');
+                    submitBtn.classList.remove('show');
+                }
+            });
+        });
+        
+        submitBtn.addEventListener('click', function() {
+            generateActionPlan();
+        });
+        
+        function generateActionPlan() {
+            const selectedList = document.getElementById('selectedList');
+            const stepsContainer = document.getElementById('stepsContainer');
+            const timelineText = document.getElementById('timelineText');
+            
+            // Clear previous content
+            selectedList.innerHTML = '';
+            stepsContainer.innerHTML = '';
+            
+            // Display selected priorities
+            selectedPriorities.forEach(key => {
+                const li = document.createElement('li');
+                li.textContent = priorityData[key].title;
+                selectedList.appendChild(li);
+            });
+            
+            // Generate combined implementation steps
+            let stepNumber = 1;
+            selectedPriorities.forEach(key => {
+                const data = priorityData[key];
+                
+                // Add priority header in steps
+                const priorityHeader = document.createElement('div');
+                priorityHeader.style.fontWeight = 'bold';
+                priorityHeader.style.color = '#195b71';
+                priorityHeader.style.marginTop = stepNumber === 1 ? '0' : '20px';
+                priorityHeader.style.marginBottom = '10px';
+                priorityHeader.textContent = `For: ${data.title}`;
+                stepsContainer.appendChild(priorityHeader);
+                
+                data.steps.forEach(step => {
+                    const stepDiv = document.createElement('div');
+                    stepDiv.className = 'step-item';
+                    stepDiv.innerHTML = `
+                        <span class="step-number">${stepNumber}</span>
+                        <div class="step-title">${step.title}</div>
+                        <div class="step-description">${step.description}</div>
+                    `;
+                    stepsContainer.appendChild(stepDiv);
+                    stepNumber++;
+                });
+            });
+            
+            // Generate timeline recommendation
+            const timelines = selectedPriorities.map(key => priorityData[key].timeline);
+            timelineText.textContent = `Based on your priorities, focus on immediate actions in the next 1-2 months, with full implementation across all three areas within 6 months. Some improvements (like systematic processes) will continue to evolve over multiple campaign cycles.`;
+            
+            // Show action plan
+            actionPlan.classList.add('show');
+            actionPlan.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+            // Hide submit button
+            submitBtn.style.display = 'none';
+        }
+        
+        function resetSelection() {
+            // Clear selections
+            selectedPriorities = [];
+            
+            // Reset UI
+            priorityItems.forEach(item => {
+                item.classList.remove('selected', 'disabled');
+                item.querySelector('.priority-number').textContent = '';
+            });
+            
+            counterNumber.textContent = '0';
+            counter.classList.remove('complete');
+            submitBtn.classList.remove('show');
+            submitBtn.style.display = 'block';
+            actionPlan.classList.remove('show');
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
