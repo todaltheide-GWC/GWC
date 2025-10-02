@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Year-on-Year Improvement Cost Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #195b71 0%, #144a5a 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+        
+        .header h2 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        
+        .task-box {
+            background: #e8f4f8;
+            border-left: 4px solid #195b71;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        
+        .task-box strong {
+            color: #195b71;
+            display: block;
+            margin-bottom: 8px;
+        }
+        
+        .context-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            font-size: 0.95em;
+        }
+        
+        .context-box strong {
+            color: #856404;
+        }
+        
+        .instructions {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+        
+        .checklist {
+            margin-bottom: 25px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+        
+        .checkbox-item:hover {
+            background: #e9ecef;
+        }
+        
+        .checkbox-item.selected {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+        
+        .checkbox-item.correct {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+        
+        .checkbox-item.incorrect {
+            background: #f8d7da;
+            border-color: #dc3545;
+        }
+        
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            cursor: pointer;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        
+        .checkbox-label {
+            flex: 1;
+            cursor: pointer;
+            font-size: 0.95em;
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, #195b71 0%, #144a5a 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1em;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .submit-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .feedback {
+            display: none;
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 8px;
+            animation: slideIn 0.4s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .feedback.show {
+            display: block;
+        }
+        
+        .feedback-good {
+            background: #d4edda;
+            border: 2px solid #28a745;
+        }
+        
+        .feedback-partial {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+        }
+        
+        .feedback h3 {
+            margin-bottom: 15px;
+            color: #195b71;
+        }
+        
+        .feedback-section {
+            margin-bottom: 15px;
+        }
+        
+        .feedback-section h4 {
+            color: #195b71;
+            margin-bottom: 8px;
+            font-size: 1em;
+        }
+        
+        .feedback-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .feedback-list li {
+            padding: 5px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        .feedback-list li:before {
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+        
+        .feedback-list li.correct:before {
+            content: "✓";
+            color: #28a745;
+        }
+        
+        .feedback-list li.missed:before {
+            content: "!";
+            color: #ffc107;
+        }
+        
+        .feedback-list li.extra:before {
+            content: "○";
+            color: #6c757d;
+        }
+        
+        .reset-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 0.9em;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .reset-btn:hover {
+            background: #5a6268;
+        }
+        
+        .score-display {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .score-display .score {
+            font-size: 2em;
+            font-weight: bold;
+            color: #195b71;
+        }
+        
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            .header h2 {
+                font-size: 1.3em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Requirement 4: Year-on-Year Improvement</h2>
+            <p>Continuous Enhancement Cost Analysis</p>
+        </div>
+        
+        <div class="task-box">
+            <strong>Your Task:</strong>
+            Select ALL cost categories necessary to systematically improve your campaigns each year based on learnings.
+        </div>
+        
+        <div class="context-box">
+            <strong>Context:</strong> You currently repeat the same approach. Gold Standard requires evidence of continuous enhancement.
+        </div>
+        
+        <div class="context-box">
+            <strong>Consider:</strong> What systems do you need to learn from experience and make improvements?
+        </div>
+        
+        <div class="instructions">
+            <strong>Select all that apply:</strong> Check all boxes that represent essential costs for systematic improvement.
+        </div>
+        
+        <form id="costForm">
+            <div class="checklist">
+                <label class="checkbox-item" data-essential="true">
+                    <input type="checkbox" name="cost" value="analysis-time">
+                    <span class="checkbox-label">Staff time for analyzing previous campaign results</span>
+                </label>
+                
+                <label class="checkbox-item" data-essential="true">
+                    <input type="checkbox" name="cost" value="review-meetings">
+                    <span class="checkbox-label">Regular review meetings and planning sessions</span>
+                </label>
+                
+                <label class="checkbox-item" data-essential="true">
+                    <input type="checkbox" name="cost" value="data-tools">
+                    <span class="checkbox-label">Data analysis tools for tracking improvement trends</span>
+                </label>
+                
+                <label class="checkbox-item" data-essential="true">
+                    <input type="checkbox" name="cost" value="redesign">
+                    <span class="checkbox-label">Redesigning materials based on learnings</span>
+                </label>
+                
+                <label class="checkbox-item" data-essential="true">
+                    <input type="checkbox" name="cost" value="pilot-testing">
+                    <span class="checkbox-label">Pilot testing new approaches</span>
+                </label>
+                
+                <label class="checkbox-item" data-essential="true">
+                    <input type="checkbox" name="cost" value="feedback-systems">
+                    <span class="checkbox-label">Community feedback collection systems</span>
+                </label>
+                
+                <label class="checkbox-item" data-essential="false">
+                    <input type="checkbox" name="cost" value="retreat">
+                    <span class="checkbox-label">Annual staff retreat for campaign planning and reflection</span>
+                </label>
+                
+                <label class="checkbox-item" data-essential="false">
+                    <input type="checkbox" name="cost" value="external-evaluation">
+                    <span class="checkbox-label">External evaluation consultant for program assessment</span>
+                </label>
+                
+                <label class="checkbox-item" data-essential="false">
+                    <input type="checkbox" name="cost" value="benchmarking">
+                    <span class="checkbox-label">Benchmarking visits to other successful programs</span>
+                </label>
+                
+                <label class="checkbox-item" data-essential="false">
+                    <input type="checkbox" name="cost" value="facilitator">
+                    <span class="checkbox-label">Innovation workshop facilitator fees</span>
+                </label>
+                
+                <label class="checkbox-item" data-essential="false">
+                    <input type="checkbox" name="cost" value="advisory-stipends">
+                    <span class="checkbox-label">Community advisory board stipends for feedback sessions</span>
+                </label>
+                
+                <label class="checkbox-item" data-essential="false">
+                    <input type="checkbox" name="cost" value="facilitation-training">
+                    <span class="checkbox-label">Focus group facilitation training for staff</span>
+                </label>
+            </div>
+            
+            <button type="submit" class="submit-btn">Check My Answers</button>
+        </form>
+        
+        <div id="feedback" class="feedback">
+            <div class="score-display">
+                <div class="score" id="scoreText"></div>
+                <div>Essential costs identified</div>
+            </div>
+            
+            <h3 id="feedbackTitle"></h3>
+            
+            <div class="feedback-section" id="correctSection" style="display:none;">
+                <h4>✓ Essential Costs You Identified:</h4>
+                <ul class="feedback-list" id="correctList"></ul>
+            </div>
+            
+            <div class="feedback-section" id="missedSection" style="display:none;">
+                <h4>! Essential Costs You Missed:</h4>
+                <ul class="feedback-list" id="missedList"></ul>
+            </div>
+            
+            <div class="feedback-section" id="optionalSection" style="display:none;">
+                <h4>○ Optional Items You Selected:</h4>
+                <ul class="feedback-list" id="optionalList"></ul>
+                <p style="margin-top:10px; font-size:0.9em; color:#666;"><em>These may provide value but aren't required for establishing a continuous improvement system.</em></p>
+            </div>
+            
+            <div class="feedback-section" id="explanationSection">
+                <h4>Key Insight:</h4>
+                <p id="explanationText"></p>
+            </div>
+            
+            <button class="reset-btn" onclick="resetQuiz()">Try Again</button>
+        </div>
+    </div>
+    
+    <script>
+        const form = document.getElementById('costForm');
+        const feedback = document.getElementById('feedback');
+        const checkboxItems = document.querySelectorAll('.checkbox-item');
+        
+        // Add click handler to checkbox items for visual feedback
+        checkboxItems.forEach(item => {
+            const checkbox = item.querySelector('input[type="checkbox"]');
+            
+            item.addEventListener('click', function(e) {
+                if (e.target.tagName !== 'INPUT') {
+                    checkbox.checked = !checkbox.checked;
+                }
+                
+                if (checkbox.checked) {
+                    item.classList.add('selected');
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+            
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    item.classList.add('selected');
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+        });
+        
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const checkedBoxes = form.querySelectorAll('input[name="cost"]:checked');
+            const essentialCosts = ['analysis-time', 'review-meetings', 'data-tools', 'redesign', 'pilot-testing', 'feedback-systems'];
+            
+            let correctSelections = [];
+            let missedEssential = [];
+            let optionalSelected = [];
+            
+            // Check what was selected
+            checkedBoxes.forEach(box => {
+                if (essentialCosts.includes(box.value)) {
+                    correctSelections.push(box.value);
+                } else {
+                    optionalSelected.push(box.value);
+                }
+            });
+            
+            // Check what was missed
+            essentialCosts.forEach(cost => {
+                if (!correctSelections.includes(cost)) {
+                    missedEssential.push(cost);
+                }
+            });
+            
+            // Calculate score
+            const score = correctSelections.length;
+            const total = essentialCosts.length;
+            const percentage = Math.round((score / total) * 100);
+            
+            // Display score
+            document.getElementById('scoreText').textContent = `${score}/${total}`;
+            
+            // Apply visual feedback to checkboxes
+            checkboxItems.forEach(item => {
+                const checkbox = item.querySelector('input[type="checkbox"]');
+                const isEssential = item.getAttribute('data-essential') === 'true';
+                
+                item.classList.remove('correct', 'incorrect');
+                
+                if (checkbox.checked) {
+                    if (isEssential) {
+                        item.classList.add('correct');
+                    } else {
+                        item.classList.add('incorrect');
+                    }
+                }
+            });
+            
+            // Show appropriate feedback
+            if (score === total && optionalSelected.length === 0) {
+                feedback.className = 'feedback feedback-good show';
+                document.getElementById('feedbackTitle').textContent = 'Excellent! Perfect Continuous Improvement System!';
+                document.getElementById('explanationText').innerHTML = 'You correctly identified all six essential cost categories for establishing a systematic improvement cycle. These represent the complete learning loop: <strong>analyzing results, holding review meetings, using data tools to track trends, redesigning materials based on findings, pilot testing innovations, and collecting community feedback.</strong> This creates a sustainable, internal continuous improvement system that Gold Standard requires - demonstrating year-on-year enhancement through evidence-based iteration.';
+            } else if (score >= 4) {
+                feedback.className = 'feedback feedback-partial show';
+                document.getElementById('feedbackTitle').textContent = 'Good foundation! Let\'s complete your improvement system.';
+                document.getElementById('explanationText').innerHTML = 'You identified most essential improvement costs. The six critical categories form a complete learning cycle: <strong>staff time for analysis, regular review meetings, data analysis tools, materials redesign, pilot testing, and community feedback systems.</strong> Together these create a sustainable internal system for evidence-based improvement without relying on expensive external resources or off-site activities.';
+            } else {
+                feedback.className = 'feedback feedback-partial show';
+                document.getElementById('feedbackTitle').textContent = 'Let\'s build a practical improvement cycle.';
+                document.getElementById('explanationText').innerHTML = 'Continuous improvement requires a <em>complete internal learning system</em>, not external inputs or special events. Gold Standard wants evidence that you systematically: analyze what worked and didn\'t work, meet as a team to discuss findings, use simple tools to track progress over time, update materials based on evidence, test new approaches before full rollout, and gather community input throughout. This practical cycle can be sustained annually without major additional costs.';
+            }
+            
+            // Populate correct selections
+            const correctSection = document.getElementById('correctSection');
+            const correctList = document.getElementById('correctList');
+            correctList.innerHTML = '';
+            
+            if (correctSelections.length > 0) {
+                correctSection.style.display = 'block';
+                const costLabels = {
+                    'analysis-time': 'Staff time for analyzing previous campaign results',
+                    'review-meetings': 'Regular review meetings and planning sessions',
+                    'data-tools': 'Data analysis tools for tracking improvement trends',
+                    'redesign': 'Redesigning materials based on learnings',
+                    'pilot-testing': 'Pilot testing new approaches',
+                    'feedback-systems': 'Community feedback collection systems'
+                };
+                
+                correctSelections.forEach(cost => {
+                    const li = document.createElement('li');
+                    li.className = 'correct';
+                    li.textContent = costLabels[cost];
+                    correctList.appendChild(li);
+                });
+            } else {
+                correctSection.style.display = 'none';
+            }
+            
+            // Populate missed essential
+            const missedSection = document.getElementById('missedSection');
+            const missedList = document.getElementById('missedList');
+            missedList.innerHTML = '';
+            
+            if (missedEssential.length > 0) {
+                missedSection.style.display = 'block';
+                const costLabels = {
+                    'analysis-time': 'Staff time for analyzing previous campaign results',
+                    'review-meetings': 'Regular review meetings and planning sessions',
+                    'data-tools': 'Data analysis tools for tracking improvement trends',
+                    'redesign': 'Redesigning materials based on learnings',
+                    'pilot-testing': 'Pilot testing new approaches',
+                    'feedback-systems': 'Community feedback collection systems'
+                };
+                
+                missedEssential.forEach(cost => {
+                    const li = document.createElement('li');
+                    li.className = 'missed';
+                    li.textContent = costLabels[cost];
+                    missedList.appendChild(li);
+                });
+            } else {
+                missedSection.style.display = 'none';
+            }
+            
+            // Populate optional selections
+            const optionalSection = document.getElementById('optionalSection');
+            const optionalList = document.getElementById('optionalList');
+            optionalList.innerHTML = '';
+            
+            if (optionalSelected.length > 0) {
+                optionalSection.style.display = 'block';
+                const costLabels = {
+                    'retreat': 'Annual staff retreat for campaign planning and reflection',
+                    'external-evaluation': 'External evaluation consultant for program assessment',
+                    'benchmarking': 'Benchmarking visits to other successful programs',
+                    'facilitator': 'Innovation workshop facilitator fees',
+                    'advisory-stipends': 'Community advisory board stipends for feedback sessions',
+                    'facilitation-training': 'Focus group facilitation training for staff'
+                };
+                
+                optionalSelected.forEach(cost => {
+                    const li = document.createElement('li');
+                    li.className = 'extra';
+                    li.textContent = costLabels[cost];
+                    optionalList.appendChild(li);
+                });
+            } else {
+                optionalSection.style.display = 'none';
+            }
+            
+            // Scroll to feedback
+            feedback.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            
+            // Disable submit button
+            document.querySelector('.submit-btn').disabled = true;
+        });
+        
+        function resetQuiz() {
+            // Reset all checkboxes
+            const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            
+            // Reset visual states
+            checkboxItems.forEach(item => {
+                item.classList.remove('selected', 'correct', 'incorrect');
+            });
+            
+            // Hide feedback
+            feedback.classList.remove('show');
+            
+            // Enable submit button
+            document.querySelector('.submit-btn').disabled = false;
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

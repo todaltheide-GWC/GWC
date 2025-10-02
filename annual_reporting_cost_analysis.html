@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Annual Reporting Cost Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #195b71 0%, #144a5a 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+        
+        .header h2 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        
+        .task-box {
+            background: #e8f4f8;
+            border-left: 4px solid #195b71;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        
+        .task-box strong {
+            color: #195b71;
+            display: block;
+            margin-bottom: 8px;
+        }
+        
+        .context-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            font-size: 0.95em;
+        }
+        
+        .context-box strong {
+            color: #856404;
+        }
+        
+        .instructions {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+        
+        .checklist {
+            margin-bottom: 25px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+        
+        .checkbox-item:hover {
+            background: #e9ecef;
+        }
+        
+        .checkbox-item.selected {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+        
+        .checkbox-item.correct {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+        
+        .checkbox-item.incorrect {
+            background: #f8d7da;
+            border-color: #dc3545;
+        }
+        
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            cursor: pointer;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        
+        .checkbox-label {
+            flex: 1;
+            cursor: pointer;
+            font-size: 0.95em;
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, #195b71 0%, #144a5a 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1em;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .submit-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .feedback {
+            display: none;
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 8px;
+            animation: slideIn 0.4s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .feedback.show {
+            display: block;
+        }
+        
+        .feedback-good {
+            background: #d4edda;
+            border: 2px solid #28a745;
+        }
+        
+        .feedback-partial {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+        }
+        
+        .feedback h3 {
+            margin-bottom: 15px;
+            color: #195b71;
+        }
+        
+        .feedback-section {
+            margin-bottom: 15px;
+        }
+        
+        .feedback-section h4 {
+            color: #195b71;
+            margin-bottom: 8px;
+            font-size: 1em;
+        }
+        
+        .feedback-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .feedback-list li {
+            padding: 5px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        .feedback-list li:before {
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+        
+        .feedback-list li.correct:before {
+            content: "✓";
+            color: #28a745;
+        }
+        
+        .feedback-list li.missed:before {
+            content: "!";
+            color: #ffc107;
+        }
+        
+        .feedback-list li.extra:before {
+            content: "○";
+            color: #6c757d;
+        }
+        
+        .reset-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 0.9em;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .reset-btn:hover {
+            background: #5a6268;
+        }
+        
+        .score-display {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .score-display .score {
+            font-size: 2em;
+            font-weight: bold;
+            color: #195b71;
+        }
+        
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            .header h2 {
+                font-size: 1.3em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Requirement 2: Annual Reporting</h2>
+            <p>Documentation and Reporting Cost Analysis</p>
+        </div>
+        
+        <div class="task-box">
+            <strong>Your Task:</strong>
+            Select ALL cost categories necessary for producing detailed annual reports that meet Gold Standard requirements.
+        </div>
+        
+        <div class="context-box">
+            <strong>Remember:</strong> You currently keep basic attendance records, but Gold Standard needs comprehensive activity documentation.
+        </div>
+        
+        <div class="context-box">
+            <strong>Consider:</strong> What will change in how you document and report your campaigns?
+        </div>
+        
+        <div class="instructions">
+            <strong>Select all that apply:</strong> Check all boxes that represent essential costs for annual reporting compliance.
+        </div>
+        
+        <form id="costForm">
+            <div class="checklist">
+                <label class="checkbox-item" data-essential="true">
+                    <input type="checkbox" name="cost" value="documentation-time">
+                    <span class="checkbox-label">Staff time for detailed documentation during campaigns</span>
+                </label>
+                
+                <label class="checkbox-item" data-essential="true">
+                    <input type="checkbox" name="cost" value="report-writing">
+                    <span class="checkbox-label">Report writing and preparation time</span>
+                </label>
+                
+                <label class="checkbox-item" data-essential="true">
+                    <input type="checkbox" name="cost" value="digital-tools">
+                    <span class="checkbox-label">Digital tools for data management</span>
+                </label>
+                
+                <label class="checkbox-item" data-essential="true">
+                    <input type="checkbox" name="cost" value="photo-video">
+                    <span class="checkbox-label">Photography/video equipment for activity documentation</span>
+                </label>
+                
+                <label class="checkbox-item" data-essential="false">
+                    <input type="checkbox" name="cost" value="graphic-design">
+                    <span class="checkbox-label">Professional graphic design services for report layout</span>
+                </label>
+                
+                <label class="checkbox-item" data-essential="false">
+                    <input type="checkbox" name="cost" value="editing">
+                    <span class="checkbox-label">Third-party report editing and proofreading services</span>
+                </label>
+                
+                <label class="checkbox-item" data-essential="false">
+                    <input type="checkbox" name="cost" value="web-hosting">
+                    <span class="checkbox-label">Web hosting for online report publication</span>
+                </label>
+                
+                <label class="checkbox-item" data-essential="false">
+                    <input type="checkbox" name="cost" value="printing">
+                    <span class="checkbox-label">Binding and printing costs for physical report copies</span>
+                </label>
+                
+                <label class="checkbox-item" data-essential="false">
+                    <input type="checkbox" name="cost" value="copyright">
+                    <span class="checkbox-label">Copyright licensing for stock photos in reports</span>
+                </label>
+                
+                <label class="checkbox-item" data-essential="false">
+                    <input type="checkbox" name="cost" value="translation">
+                    <span class="checkbox-label">Translation services if reports need local language versions</span>
+                </label>
+                
+                <label class="checkbox-item" data-essential="true">
+                    <input type="checkbox" name="cost" value="data-storage">
+                    <span class="checkbox-label">Data storage and backup systems</span>
+                </label>
+            </div>
+            
+            <button type="submit" class="submit-btn">Check My Answers</button>
+        </form>
+        
+        <div id="feedback" class="feedback">
+            <div class="score-display">
+                <div class="score" id="scoreText"></div>
+                <div>Essential costs identified</div>
+            </div>
+            
+            <h3 id="feedbackTitle"></h3>
+            
+            <div class="feedback-section" id="correctSection" style="display:none;">
+                <h4>✓ Essential Costs You Identified:</h4>
+                <ul class="feedback-list" id="correctList"></ul>
+            </div>
+            
+            <div class="feedback-section" id="missedSection" style="display:none;">
+                <h4>! Essential Costs You Missed:</h4>
+                <ul class="feedback-list" id="missedList"></ul>
+            </div>
+            
+            <div class="feedback-section" id="optionalSection" style="display:none;">
+                <h4>○ Optional Items You Selected:</h4>
+                <ul class="feedback-list" id="optionalList"></ul>
+                <p style="margin-top:10px; font-size:0.9em; color:#666;"><em>These may improve quality but aren't required for Gold Standard annual reporting compliance.</em></p>
+            </div>
+            
+            <div class="feedback-section" id="explanationSection">
+                <h4>Key Insight:</h4>
+                <p id="explanationText"></p>
+            </div>
+            
+            <button class="reset-btn" onclick="resetQuiz()">Try Again</button>
+        </div>
+    </div>
+    
+    <script>
+        const form = document.getElementById('costForm');
+        const feedback = document.getElementById('feedback');
+        const checkboxItems = document.querySelectorAll('.checkbox-item');
+        
+        // Add click handler to checkbox items for visual feedback
+        checkboxItems.forEach(item => {
+            const checkbox = item.querySelector('input[type="checkbox"]');
+            
+            item.addEventListener('click', function(e) {
+                if (e.target.tagName !== 'INPUT') {
+                    checkbox.checked = !checkbox.checked;
+                }
+                
+                if (checkbox.checked) {
+                    item.classList.add('selected');
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+            
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    item.classList.add('selected');
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+        });
+        
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const checkedBoxes = form.querySelectorAll('input[name="cost"]:checked');
+            const essentialCosts = ['documentation-time', 'report-writing', 'digital-tools', 'photo-video', 'data-storage'];
+            
+            let correctSelections = [];
+            let missedEssential = [];
+            let optionalSelected = [];
+            
+            // Check what was selected
+            checkedBoxes.forEach(box => {
+                if (essentialCosts.includes(box.value)) {
+                    correctSelections.push(box.value);
+                } else {
+                    optionalSelected.push(box.value);
+                }
+            });
+            
+            // Check what was missed
+            essentialCosts.forEach(cost => {
+                if (!correctSelections.includes(cost)) {
+                    missedEssential.push(cost);
+                }
+            });
+            
+            // Calculate score
+            const score = correctSelections.length;
+            const total = essentialCosts.length;
+            const percentage = Math.round((score / total) * 100);
+            
+            // Display score
+            document.getElementById('scoreText').textContent = `${score}/${total}`;
+            
+            // Apply visual feedback to checkboxes
+            checkboxItems.forEach(item => {
+                const checkbox = item.querySelector('input[type="checkbox"]');
+                const isEssential = item.getAttribute('data-essential') === 'true';
+                
+                item.classList.remove('correct', 'incorrect');
+                
+                if (checkbox.checked) {
+                    if (isEssential) {
+                        item.classList.add('correct');
+                    } else {
+                        item.classList.add('incorrect');
+                    }
+                }
+            });
+            
+            // Show appropriate feedback
+            if (score === total && optionalSelected.length === 0) {
+                feedback.className = 'feedback feedback-good show';
+                document.getElementById('feedbackTitle').textContent = 'Excellent! Perfect Reporting Cost Analysis!';
+                document.getElementById('explanationText').innerHTML = 'You correctly identified all five essential cost categories for Gold Standard annual reporting. These represent the core documentation capabilities you must build: <strong>staff time for field documentation, report writing time, digital data management tools, photo/video documentation equipment, and data storage systems.</strong> This shift from basic attendance records to comprehensive activity documentation is fundamental to Gold Standard compliance.';
+            } else if (score >= 3) {
+                feedback.className = 'feedback feedback-partial show';
+                document.getElementById('feedbackTitle').textContent = 'Good progress! Let\'s refine your reporting strategy.';
+                document.getElementById('explanationText').innerHTML = 'You identified most essential reporting costs. The five critical categories are: <strong>documentation time during campaigns, report writing, digital tools, photo/video equipment, and data storage.</strong> These enable the shift from basic record-keeping to comprehensive activity documentation that Gold Standard requires. Polish and presentation costs are optional.';
+            } else {
+                feedback.className = 'feedback feedback-partial show';
+                document.getElementById('feedbackTitle').textContent = 'Let\'s build a solid reporting foundation.';
+                document.getElementById('explanationText').innerHTML = 'Gold Standard annual reporting requires investment in <em>documentation capacity and systems</em>, not just report production. Focus on: capturing detailed activity information in the field, managing that data systematically, and having the staff time and tools to compile comprehensive annual reports. Beautiful reports don\'t matter if the underlying documentation system is inadequate.';
+            }
+            
+            // Populate correct selections
+            const correctSection = document.getElementById('correctSection');
+            const correctList = document.getElementById('correctList');
+            correctList.innerHTML = '';
+            
+            if (correctSelections.length > 0) {
+                correctSection.style.display = 'block';
+                const costLabels = {
+                    'documentation-time': 'Staff time for detailed documentation during campaigns',
+                    'report-writing': 'Report writing and preparation time',
+                    'digital-tools': 'Digital tools for data management',
+                    'photo-video': 'Photography/video equipment for activity documentation',
+                    'data-storage': 'Data storage and backup systems'
+                };
+                
+                correctSelections.forEach(cost => {
+                    const li = document.createElement('li');
+                    li.className = 'correct';
+                    li.textContent = costLabels[cost];
+                    correctList.appendChild(li);
+                });
+            } else {
+                correctSection.style.display = 'none';
+            }
+            
+            // Populate missed essential
+            const missedSection = document.getElementById('missedSection');
+            const missedList = document.getElementById('missedList');
+            missedList.innerHTML = '';
+            
+            if (missedEssential.length > 0) {
+                missedSection.style.display = 'block';
+                const costLabels = {
+                    'documentation-time': 'Staff time for detailed documentation during campaigns',
+                    'report-writing': 'Report writing and preparation time',
+                    'digital-tools': 'Digital tools for data management',
+                    'photo-video': 'Photography/video equipment for activity documentation',
+                    'data-storage': 'Data storage and backup systems'
+                };
+                
+                missedEssential.forEach(cost => {
+                    const li = document.createElement('li');
+                    li.className = 'missed';
+                    li.textContent = costLabels[cost];
+                    missedList.appendChild(li);
+                });
+            } else {
+                missedSection.style.display = 'none';
+            }
+            
+            // Populate optional selections
+            const optionalSection = document.getElementById('optionalSection');
+            const optionalList = document.getElementById('optionalList');
+            optionalList.innerHTML = '';
+            
+            if (optionalSelected.length > 0) {
+                optionalSection.style.display = 'block';
+                const costLabels = {
+                    'graphic-design': 'Professional graphic design services for report layout',
+                    'editing': 'Third-party report editing and proofreading services',
+                    'web-hosting': 'Web hosting for online report publication',
+                    'printing': 'Binding and printing costs for physical report copies',
+                    'copyright': 'Copyright licensing for stock photos in reports',
+                    'translation': 'Translation services if reports need local language versions'
+                };
+                
+                optionalSelected.forEach(cost => {
+                    const li = document.createElement('li');
+                    li.className = 'extra';
+                    li.textContent = costLabels[cost];
+                    optionalList.appendChild(li);
+                });
+            } else {
+                optionalSection.style.display = 'none';
+            }
+            
+            // Scroll to feedback
+            feedback.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            
+            // Disable submit button
+            document.querySelector('.submit-btn').disabled = true;
+        });
+        
+        function resetQuiz() {
+            // Reset all checkboxes
+            const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            
+            // Reset visual states
+            checkboxItems.forEach(item => {
+                item.classList.remove('selected', 'correct', 'incorrect');
+            });
+            
+            // Hide feedback
+            feedback.classList.remove('show');
+            
+            // Enable submit button
+            document.querySelector('.submit-btn').disabled = false;
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

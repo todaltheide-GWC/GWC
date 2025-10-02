@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JMP Service Ladders Interactive</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #195b71 0%, #144a5a 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 0.95em;
+            opacity: 0.9;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #e8f4f8;
+            border-bottom: 2px solid #195b71;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 15px 20px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: bold;
+            color: #195b71;
+            transition: all 0.3s ease;
+            border-right: 1px solid #195b71;
+        }
+        
+        .tab:last-child {
+            border-right: none;
+        }
+        
+        .tab:hover {
+            background: #d0e8f0;
+        }
+        
+        .tab.active {
+            background: #195b71;
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .ladder-intro {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 5px;
+        }
+        
+        .ladder-intro strong {
+            color: #856404;
+        }
+        
+        .service-level {
+            margin-bottom: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .service-level:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .level-header {
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+        
+        .level-header:hover {
+            opacity: 0.9;
+        }
+        
+        .level-info {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+        
+        .level-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .level-text {
+            flex: 1;
+        }
+        
+        .level-name {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 3px;
+        }
+        
+        .level-subtitle {
+            font-size: 0.85em;
+            opacity: 0.8;
+        }
+        
+        .level-stats {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-right: 15px;
+        }
+        
+        .percentage-bar {
+            width: 120px;
+            height: 8px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .percentage-fill {
+            height: 100%;
+            background: rgba(255,255,255,0.8);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        
+        .percentage-text {
+            font-size: 0.9em;
+            font-weight: bold;
+            min-width: 60px;
+            text-align: right;
+        }
+        
+        .info-icon {
+            width: 24px;
+            height: 24px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9em;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        
+        .expand-icon {
+            width: 30px;
+            height: 30px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            transition: transform 0.3s ease;
+        }
+        
+        .expand-icon.expanded {
+            transform: rotate(180deg);
+        }
+        
+        /* Color schemes for different levels */
+        .safely-managed .level-header {
+            background: linear-gradient(135deg, #4169E1 0%, #1E90FF 100%);
+            color: white;
+        }
+        
+        .basic .level-header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+        
+        .limited .level-header {
+            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+            color: white;
+        }
+        
+        .unimproved .level-header {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            color: white;
+        }
+        
+        .surface-water .level-header, .open-defecation .level-header, .no-facility .level-header {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+        }
+        
+        .level-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+            background: #f8f9fa;
+        }
+        
+        .level-details.expanded {
+            max-height: 800px;
+        }
+        
+        .details-content {
+            padding: 25px;
+        }
+        
+        .detail-section {
+            margin-bottom: 20px;
+        }
+        
+        .detail-section h4 {
+            color: #195b71;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .detail-section p {
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .example-box {
+            background: white;
+            border-left: 4px solid #195b71;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 4px;
+        }
+        
+        .example-box strong {
+            color: #195b71;
+            display: block;
+            margin-bottom: 8px;
+        }
+        
+        .criteria-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .criteria-list li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        .criteria-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                border-right: none;
+                border-bottom: 1px solid #195b71;
+            }
+            
+            .level-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .level-stats {
+                width: 100%;
+            }
+            
+            .percentage-bar {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>JMP Service Ladder Explorer</h1>
+            <p>Click on each service level to see what it looks like in a real community</p>
+        </div>
+        
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('water')">
+                💧 Water Service Ladder
+            </div>
+            <div class="tab" onclick="switchTab('sanitation')">
+                🚽 Sanitation Service Ladder
+            </div>
+            <div class="tab" onclick="switchTab('hygiene')">
+                🧼 Hygiene Service Ladder
+            </div>
+        </div>
+        
+        <!-- WATER TAB -->
+        <div id="water-content" class="tab-content active">
+            <div class="ladder-intro">
+                <strong>WATER SERVICE LADDER</strong> - Click each level to explore
+            </div>
+            
+            <div class="service-level safely-managed">
+                <div class="level-header" onclick="toggleLevel(this)">
+                    <div class="level-info">
+                        <div class="level-indicator" style="background: #4169E1;"></div>
+                        <div class="level-text">
+                            <div class="level-name">SAFELY MANAGED</div>
+                            <div class="level-subtitle">Treated water on premises, always available</div>
+                        </div>
+                    </div>
+                    <div class="level-stats">
+                        <div class="percentage-bar">
+                            <div class="percentage-fill" style="width: 90%;"></div>
+                        </div>
+                        <div class="percentage-text">80-100%</div>
+                        <div class="info-icon">ℹ️</div>
+                    </div>
+                    <div class="expand-icon">▼</div>
+                </div>
+                <div class="level-details">
+                    <div class="details-content">
+                        <div class="detail-section">
+                            <h4>Definition</h4>
+                            <p>Drinking water from an improved water source that is located on premises, available when needed, and free from fecal and priority chemical contamination.</p>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h4>What This Looks Like in a Real Community</h4>
+                            <div class="example-box">
+                                <strong>Example: Sarah's Home in Nairobi, Kenya</strong>
+                                <p>Sarah has a piped water connection directly into her home. She turns on her kitchen tap and clean, treated water flows immediately. The water is tested regularly by the municipal water authority for microbial and chemical contamination. Her family doesn't worry about collecting water or whether it's safe to drink.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h4>Key Criteria</h4>
+                            <ul class="criteria-list">
+                                <li>Improved water source (piped, borehole, protected well)</li>
+                                <li>Located on premises (no travel time required)</li>
+                                <li>Available when needed (no shortages or interruptions)</li>
+                                <li>Free from contamination (E. coli = 0 CFU/100mL)</li>
+                                <li>Free from priority chemicals (arsenic ≤10 µg/L, fluoride ≤1,500 µg/L)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="service-level basic">
+                <div class="level-header" onclick="toggleLevel(this)">
+                    <div class="level-info">
+                        <div class="level-indicator" style="background: #28a745;"></div>
+                        <div class="level-text">
+                            <div class="level-name">BASIC</div>
+                            <div class="level-subtitle">Improved source <30min walk</div>
+                        </div>
+                    </div>
+                    <div class="level-stats">
+                        <div class="percentage-bar">
+                            <div class="percentage-fill" style="width: 75%;"></div>
+                        </div>
+                        <div class="percentage-text">50-80%</div>
+                        <div class="info-icon">ℹ️</div>
+                    </div>
+                    <div class="expand-icon">▼</div>
+                </div>
+                <div class="level-details">
+                    <div class="details-content">
+                        <div class="detail-section">
+                            <h4>Definition</h4>
+                            <p>Drinking water from an improved source, provided collection time is not more than 30 minutes for a round trip, including queuing.</p>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h4>What This Looks Like in a Real Community</h4>
+                            <div class="example-box">
+                                <strong>Example: Amara's Village in Rural Ghana</strong>
+                                <p>Amara walks 10 minutes to a community borehole with a hand pump. There are usually two or three people ahead of her, so including waiting time, the whole trip takes about 20 minutes. The borehole is protected and provides clean water, but she needs to make this trip multiple times per day to collect enough water for her family's needs.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h4>Key Criteria</h4>
+                            <ul class="criteria-list">
+                                <li>Improved water source (protected spring, borehole, public tap)</li>
+                                <li>Round trip collection time ≤30 minutes (including queuing)</li>
+                                <li>May not be on premises</li>
+                                <li>Water quality may vary</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="service-level limited">
+                <div class="level-header" onclick="toggleLevel(this)">
+                    <div class="level-info">
+                        <div class="level-indicator" style="background: #ffc107;"></div>
+                        <div class="level-text">
+                            <div class="level-name">LIMITED</div>
+                            <div class="level-subtitle">Improved source >30min walk</div>
+                        </div>
+                    </div>
+                    <div class="level-stats">
+                        <div class="percentage-bar">
+                            <div class="percentage-fill" style="width: 45%;"></div>
+                        </div>
+                        <div class="percentage-text">25-50%</div>
+                        <div class="info-icon">ℹ️</div>
+                    </div>
+                    <div class="expand-icon">▼</div>
+                </div>
+                <div class="level-details">
+                    <div class="details-content">
+                        <div class="detail-section">
+                            <h4>Definition</h4>
+                            <p>Drinking water from an improved source for which collection time exceeds 30 minutes for a round trip, including queuing.</p>
+                        </div>
+                        <div class="detail-section">
+                            <h4>What This Looks Like in a Real Community</h4>
+                            <div class="example-box">
+                                <strong>Example: Fatima's Household in Remote Ethiopia</strong>
+                                <p>Fatima walks 45 minutes each way to reach a protected well. With queuing time during busy hours, the total trip can take 2 hours. She can only make one or two trips per day, which limits how much water her family can use. The well is improved and protected, but the distance makes it difficult to collect enough water for all household needs.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h4>Key Criteria</h4>
+                            <ul class="criteria-list">
+                                <li>Improved water source (protected well, distant borehole)</li>
+                                <li>Round trip collection time >30 minutes (including queuing)</li>
+                                <li>Limits quantity of water that can be collected</li>
+                                <li>Time burden affects women and children disproportionately</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="service-level unimproved">
+                <div class="level-header" onclick="toggleLevel(this)">
+                    <div class="level-info">
+                        <div class="level-indicator" style="background: #ff6b6b;"></div>
+                        <div class="level-text">
+                            <div class="level-name">UNIMPROVED</div>
+                            <div class="level-subtitle">Unprotected wells/springs</div>
+                        </div>
+                    </div>
+                    <div class="level-stats">
+                        <div class="percentage-bar">
+                            <div class="percentage-fill" style="width: 25%;"></div>
+                        </div>
+                        <div class="percentage-text">10-25%</div>
+                        <div class="info-icon">ℹ️</div>
+                    </div>
+                    <div class="expand-icon">▼</div>
+                </div>
+                <div class="level-details">
+                    <div class="details-content">
+                        <div class="detail-section">
+                            <h4>Definition</h4>
+                            <p>Drinking water from an unprotected dug well or unprotected spring.</p>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h4>What This Looks Like in a Real Community</h4>
+                            <div class="example-box">
+                                <strong>Example: Maria's Village in Rural Nicaragua</strong>
+                                <p>Maria collects water from an unprotected spring where runoff from surrounding land can contaminate the water. The spring has no cover or protection, and animals sometimes drink from it. During the rainy season, the water becomes very muddy. Maria's children frequently suffer from diarrheal diseases.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h4>Key Criteria</h4>
+                            <ul class="criteria-list">
+                                <li>Unprotected dug well (no lining, cover, or pump)</li>
+                                <li>Unprotected spring (no structure to prevent contamination)</li>
+                                <li>High risk of contamination from surface runoff</li>
+                                <li>Vulnerable to animal contact and environmental pollution</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="service-level surface-water">
+                <div class="level-header" onclick="toggleLevel(this)">
+                    <div class="level-info">
+                        <div class="level-indicator" style="background: #dc3545;"></div>
+                        <div class="level-text">
+                            <div class="level-name">SURFACE WATER</div>
+                            <div class="level-subtitle">Drinking from rivers, lakes, ponds</div>
+                        </div>
+                    </div>
+                    <div class="level-stats">
+                        <div class="percentage-bar">
+                            <div class="percentage-fill" style="width: 8%;"></div>
+                        </div>
+                        <div class="percentage-text">0-9%</div>
+                        <div class="info-icon">ℹ️</div>
+                    </div>
+                    <div class="expand-icon">▼</div>
+                </div>
+                <div class="level-details">
+                    <div class="details-content">
+                        <div class="detail-section">
+                            <h4>Definition</h4>
+                            <p>Drinking water directly from a river, dam, lake, pond, stream, canal, or irrigation canal.</p>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h4>What This Looks Like in a Real Community</h4>
+                            <div class="example-box">
+                                <strong>Example: John's Settlement in South Sudan</strong>
+                                <p>John and his family collect water directly from a nearby river. They dip their containers into the same water where people wash clothes, animals drink, and upstream communities dispose of waste. The water is visibly brown during certain times of year. Waterborne diseases are common in his community, and boiling water is difficult due to lack of fuel.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h4>Key Criteria</h4>
+                            <ul class="criteria-list">
+                                <li>Direct collection from rivers, streams, or ponds</li>
+                                <li>No treatment or protection</li>
+                                <li>Highest contamination risk</li>
+                                <li>Often shared with animals and used for multiple purposes</li>
+                                <li>Associated with highest burden of waterborne disease</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SANITATION TAB -->
+        <div id="sanitation-content" class="tab-content">
+            <div class="ladder-intro">
+                <strong>SANITATION SERVICE LADDER</strong> - Click each level to explore
+            </div>
+            
+            <div class="service-level safely-managed">
+                <div class="level-header" onclick="toggleLevel(this)">
+                    <div class="level-info">
+                        <div class="level-indicator" style="background: #4169E1;"></div>
+                        <div class="level-text">
+                            <div class="level-name">SAFELY MANAGED</div>
+                            <div class="level-subtitle">Private facility + waste safely treated</div>
+                        </div>
+                    </div>
+                    <div class="level-stats">
+                        <div class="percentage-bar">
+                            <div class="percentage-fill" style="width: 95%;"></div>
+                        </div>
+                        <div class="percentage-text">85-100%</div>
+                        <div class="info-icon">ℹ️</div>
+                    </div>
+                    <div class="expand-icon">▼</div>
+                </div>
+                <div class="level-details">
+                    <div class="details-content">
+                        <div class="detail-section">
+                            <h4>Definition</h4>
+                            <p>Use of improved facilities that are not shared with other households and where excreta are safely disposed of in situ or transported and treated offsite.</p>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h4>What This Looks Like in a Real Community</h4>
+                            <div class="example-box">
+                                <strong>Example: Pedro's Home in Lima, Peru</strong>
+                                <p>Pedro's household has a flush toilet connected to a municipal sewer system. Wastewater flows through pipes to a treatment plant where it's processed before being safely released. His family uses the toilet with privacy and dignity, and there's no risk of contaminating the local environment or water sources.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h4>Key Criteria</h4>
+                            <ul class="criteria-list">
+                                <li>Improved facility (flush toilet, pit latrine with slab, composting toilet)</li>
+                                <li>Not shared with other households (private use)</li>
+                                <li>Excreta safely managed through sewer connection OR</li>
+                                <li>Safely emptied and transported to treatment facility OR</li>
+                                <li>Safely treated in situ (e.g., septic system)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="service-level basic">
+                <div class="level-header" onclick="toggleLevel(this)">
+                    <div class="level-info">
+                        <div class="level-indicator" style="background: #28a745;"></div>
+                        <div class="level-text">
+                            <div class="level-name">BASIC</div>
+                            <div class="level-subtitle">Private improved facility</div>
+                        </div>
+                    </div>
+                    <div class="level-stats">
+                        <div class="percentage-bar">
+                            <div class="percentage-fill" style="width: 70%;"></div>
+                        </div>
+                        <div class="percentage-text">50-84%</div>
+                        <div class="info-icon">ℹ️</div>
+                    </div>
+                    <div class="expand-icon">▼</div>
+                </div>
+                <div class="level-details">
+                    <div class="details-content">
+                        <div class="detail-section">
+                            <h4>Definition</h4>
+                            <p>Use of improved facilities that are not shared with other households.</p>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h4>What This Looks Like in a Real Community</h4>
+                            <div class="example-box">
+                                <strong>Example: Anjali's Home in Rural India</strong>
+                                <p>Anjali's family has a pit latrine with a concrete slab and a squat plate. The pit is deep and covered, keeping flies and odors contained. Only her immediate family uses this latrine - it's private and located in their compound. While the pit will eventually need emptying, it provides safe, dignified sanitation for her household.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h4>Key Criteria</h4>
+                            <ul class="criteria-list">
+                                <li>Improved sanitation facility (pit latrine with slab, flush toilet, composting toilet)</li>
+                                <li>Used by only one household (not shared)</li>
+                                <li>Provides privacy and dignity</li>
+                                <li>May not have waste treatment or safe disposal</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="service-level limited">
+                <div class="level-header" onclick="toggleLevel(this)">
+                    <div class="level-info">
+                        <div class="level-indicator" style="background: #ffc107;"></div>
+                        <div class="level-text">
+                            <div class="level-name">LIMITED</div>
+                            <div class="level-subtitle">Shared improved facility</div>
+                        </div>
+                    </div>
+                    <div class="level-stats">
+                        <div class="percentage-bar">
+                            <div class="percentage-fill" style="width: 40%;"></div>
+                        </div>
+                        <div class="percentage-text">25-49%</div>
+                        <div class="info-icon">ℹ️</div>
+                    </div>
+                    <div class="expand-icon">▼</div>
+                </div>
+                <div class="level-details">
+                    <div class="details-content">
+                        <div class="detail-section">
+                            <h4>Definition</h4>
+                            <p>Use of improved facilities shared between two or more households.</p>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h4>What This Looks Like in a Real Community</h4>
+                            <div class="example-box">
+                                <strong>Example: Three Families in Urban Nairobi Slum</strong>
+                                <p>Grace, Michael, and Beatrice live in three neighboring households that share a single pit latrine with a slab. The latrine has a door and is kept relatively clean, but with three families using it (about 15 people total), it gets dirty quickly and sometimes there are conflicts about cleaning responsibilities. During busy morning hours, family members may need to wait their turn.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h4>Key Criteria</h4>
+                            <ul class="criteria-list">
+                                <li>Improved facility type (pit latrine with slab, flush toilet)</li>
+                                <li>Shared between 2 or more households</li>
+                                <li>May be difficult to keep clean</li>
+                                <li>Less privacy and dignity than private facility</li>
+                                <li>Maintenance responsibilities may be unclear</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="service-level unimproved">
+                <div class="level-header" onclick="toggleLevel(this)">
+                    <div class="level-info">
+                        <div class="level-indicator" style="background: #ff6b6b;"></div>
+                        <div class="level-text">
+                            <div class="level-name">UNIMPROVED</div>
+                            <div class="level-subtitle">Pit latrines without slabs</div>
+                        </div>
+                    </div>
+                    <div class="level-stats">
+                        <div class="percentage-bar">
+                            <div class="percentage-fill" style="width: 20%;"></div>
+                        </div>
+                        <div class="percentage-text">10-24%</div>
+                        <div class="info-icon">ℹ️</div>
+                    </div>
+                    <div class="expand-icon">▼</div>
+                </div>
+                <div class="level-details">
+                    <div class="details-content">
+                        <div class="detail-section">
+                            <h4>Definition</h4>
+                            <p>Use of pit latrines without a slab or platform, hanging latrines, or bucket latrines.</p>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h4>What This Looks Like in a Real Community</h4>
+                            <div class="example-box">
+                                <strong>Example: Coastal Fishing Village in Bangladesh</strong>
+                                <p>Rahman's family uses a hanging latrine built over the water - essentially a wooden structure with a hole in the floor suspended over the river. Waste drops directly into the water below. There's no slab or proper platform, making it uncomfortable and dangerous, especially for children. The facility doesn't effectively contain excreta and contributes to water contamination.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h4>Key Criteria</h4>
+                            <ul class="criteria-list">
+                                <li>Pit latrine without slab (open pit, rudimentary hole)</li>
+                                <li>Hanging latrine (built over water)</li>
+                                <li>Bucket latrine (manual collection)</li>
+                                <li>Does not effectively separate people from excreta</li>
+                                <li>Health and safety risks</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="service-level open-defecation">
+                <div class="level-header" onclick="toggleLevel(this)">
+                    <div class="level-info">
+                        <div class="level-indicator" style="background: #dc3545;"></div>
+                        <div class="level-text">
+                            <div class="level-name">OPEN DEFECATION</div>
+                            <div class="level-subtitle">Using fields, forests, open spaces</div>
+                        </div>
+                    </div>
+                    <div class="level-stats">
+                        <div class="percentage-bar">
+                            <div class="percentage-fill" style="width: 5%;"></div>
+                        </div>
+                        <div class="percentage-text">0-9%</div>
+                        <div class="info-icon">ℹ️</div>
+                    </div>
+                    <div class="expand-icon">▼</div>
+                </div>
+                <div class="level-details">
+                    <div class="details-content">
+                        <div class="detail-section">
+                            <h4>Definition</h4>
+                            <p>Disposal of human feces in fields, forests, bushes, open bodies of water, beaches, or other open spaces, or with solid waste.</p>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h4>What This Looks Like in a Real Community</h4>
+                            <div class="example-box">
+                                <strong>Example: Remote Village in Niger</strong>
+                                <p>Ibrahim's community has no latrines. Each morning before dawn, people walk to designated areas in nearby fields to defecate. Women and girls feel particularly unsafe during these early morning trips. During the rainy season, waste is washed into water sources. Children playing in the village are exposed to fecal contamination, leading to frequent illness.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h4>Key Criteria</h4>
+                            <ul class="criteria-list">
+                                <li>No use of any toilet or latrine facility</li>
+                                <li>Defecation in open fields, forests, or bushes</li>
+                                <li>Direct contamination of environment</li>
+                                <li>Severe dignity and safety concerns, especially for women and girls</li>
+                                <li>High disease transmission risk</li>
+                                <li>SDG Target 6.2 aims to end open defecation by 2030</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- HYGIENE TAB -->
+        <div id="hygiene-content" class="tab-content">
+            <div class="ladder-intro">
+                <strong>HYGIENE SERVICE LADDER</strong> - Click each level to explore
+            </div>
+            
+            <div class="service-level basic">
+                <div class="level-header" onclick="toggleLevel(this)">
+                    <div class="level-info">
+                        <div class="level-indicator" style="background: #28a745;"></div>
+                        <div class="level-text">
+                            <div class="level-name">BASIC</div>
+                            <div class="level-subtitle">Handwashing facility WITH soap AND water</div>
+                        </div>
+                    </div>
+                    <div class="level-stats">
+                        <div class="percentage-bar">
+                            <div class="percentage-fill" style="width: 75%;"></div>
+                        </div>
+                        <div class="percentage-text">60-80%</div>
+                        <div class="info-icon">ℹ️</div>
+                    </div>
+                    <div class="expand-icon">▼</div>
+                </div>
+                <div class="level-details">
+                    <div class="details-content">
+                        <div class="detail-section">
+                            <h4>Definition</h4>
+                            <p>Availability of a handwashing facility on premises with soap and water.</p>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h4>What This Looks Like in a Real Community</h4>
+                            <div class="example-box">
+                                <strong>Example: Rosa's Home in Guatemala</strong>
+                                <p>Rosa has a simple handwashing station right outside her latrine - a bucket with a tap (or a tippy-tap made from a plastic bottle), a bar of soap on a dish, and water that she refills daily. After using the toilet and before preparing food, family members wash their hands with soap and water. The setup is basic but effective at helping her family maintain good hygiene.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h4>Key Criteria</h4>
+                            <ul class="criteria-list">
+                                <li>Handwashing facility present on premises</li>
+                                <li>Both soap AND water available</li>
+                                <li>Can be simple (tippy-tap, bucket with tap) or permanent (sink with running water)</li>
+                                <li>Located conveniently near toilet or food preparation area</li>
+                                <li>Enables handwashing at critical times</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="service-level limited">
+                <div class="level-header" onclick="toggleLevel(this)">
+                    <div class="level-info">
+                        <div class="level-indicator" style="background: #ffc107;"></div>
+                        <div class="level-text">
+                            <div class="level-name">LIMITED</div>
+                            <div class="level-subtitle">Handwashing facility WITHOUT soap or water</div>
+                        </div>
+                    </div>
+                    <div class="level-stats">
+                        <div class="percentage-bar">
+                            <div class="percentage-fill" style="width: 55%;"></div>
+                        </div>
+                        <div class="percentage-text">30-59%</div>
+                        <div class="info-icon">ℹ️</div>
+                    </div>
+                    <div class="expand-icon">▼</div>
+                </div>
+                <div class="level-details">
+                    <div class="details-content">
+                        <div class="detail-section">
+                            <h4>Definition</h4>
+                            <p>Availability of handwashing facility on premises without soap and water.</p>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h4>What This Looks Like in a Real Community</h4>
+                            <div class="example-box">
+                                <strong>Example: James' Household in Rural Malawi</strong>
+                                <p>James has a handwashing station (a bucket with a tap) near his latrine, but often the water container is empty because water is scarce and collected from a distant source. Sometimes soap runs out and isn't replaced for weeks because it's expensive. The facility exists, but without both soap and water consistently available, family members can't always wash their hands properly.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h4>Key Criteria</h4>
+                            <ul class="criteria-list">
+                                <li>Handwashing facility present</li>
+                                <li>Missing soap OR missing water (or both)</li>
+                                <li>May have water but no soap</li>
+                                <li>May have soap but no water</li>
+                                <li>Infrastructure exists but not functional for effective handwashing</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="service-level no-facility">
+                <div class="level-header" onclick="toggleLevel(this)">
+                    <div class="level-info">
+                        <div class="level-indicator" style="background: #dc3545;"></div>
+                        <div class="level-text">
+                            <div class="level-name">NO FACILITY</div>
+                            <div class="level-subtitle">No designated handwashing place at home</div>
+                        </div>
+                    </div>
+                    <div class="level-stats">
+                        <div class="percentage-bar">
+                            <div class="percentage-fill" style="width: 15%;"></div>
+                        </div>
+                        <div class="percentage-text">0-29%</div>
+                        <div class="info-icon">ℹ️</div>
+                    </div>
+                    <div class="expand-icon">▼</div>
+                </div>
+                <div class="level-details">
+                    <div class="details-content">
+                        <div class="detail-section">
+                            <h4>Definition</h4>
+                            <p>No handwashing facility on premises.</p>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h4>What This Looks Like in a Real Community</h4>
+                            <div class="example-box">
+                                <strong>Example: Refugee Settlement in Uganda</strong>
+                                <p>Esther and her family live in a temporary shelter with no designated handwashing facility. They might occasionally wash hands using a cup of water when available, but there's no specific place or system for handwashing. Soap is a luxury item. After using the communal latrine or before eating, thorough handwashing simply isn't possible, putting the family at high risk of disease transmission.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h4>Key Criteria</h4>
+                            <ul class="criteria-list">
+                                <li>No handwashing facility visible on premises</li>
+                                <li>No designated place for handwashing</li>
+                                <li>Hand hygiene practices likely very limited</li>
+                                <li>High risk of disease transmission</li>
+                                <li>Common in emergency settings, informal settlements, extremely poor households</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName + '-content').classList.add('active');
+            
+            // Add active class to clicked tab
+            event.currentTarget.classList.add('active');
+        }
+        
+        function toggleLevel(header) {
+            const details = header.nextElementSibling;
+            const icon = header.querySelector('.expand-icon');
+            
+            // Close all other expanded sections first (optional - remove these lines if you want multiple sections open)
+            document.querySelectorAll('.level-details.expanded').forEach(detail => {
+                if (detail !== details) {
+                    detail.classList.remove('expanded');
+                    detail.previousElementSibling.querySelector('.expand-icon').classList.remove('expanded');
+                }
+            });
+            
+            // Toggle current section
+            details.classList.toggle('expanded');
+            icon.classList.toggle('expanded');
+        }
+    </script>
+</body>
+</html>
